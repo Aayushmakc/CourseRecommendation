@@ -6,10 +6,12 @@ from django.contrib.auth import authenticate
 from .serializers import SignupSerializer
 
 class SignupView(APIView):
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         serializer = SignupSerializer(data=request.data)
+
+     
         if serializer.is_valid():
-            serializer.save()
+            serializer.save()  
             return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
