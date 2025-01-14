@@ -30,6 +30,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
+from rest_framework_simplejwt.tokens import RefreshToken
 
 class SignupSerializer(serializers.Serializer):
     first_name = serializers.CharField(max_length=100, required=True)
@@ -44,7 +45,6 @@ class SignupSerializer(serializers.Serializer):
         return value
 
     def validate_phone_number(self, value):
-       
         cleaned_number = value.replace(' ', '')
         if not cleaned_number[1:].isdigit():
             raise serializers.ValidationError("Invalid phone number format")
@@ -63,8 +63,45 @@ class SignupSerializer(serializers.Serializer):
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name']
         )
+        
+        # Generate tokens
+        refresh = RefreshToken.for_user(user)
+        validated_data['tokens'] = {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        }
+        
         return user
+
+    def to_representation(self, instance):
+        """Convert the user instance to JSON-serializable format"""
+        data = {
+            'user': {
+                'id': instance.id,
+                'email': instance.email,
+                'first_name': instance.first_name,
+                'last_name': instance.last_name
+            }
+        }
+        # Add tokens if they were generated
+        if hasattr(self, 'validated_data') and 'tokens' in self.validated_data:
+            data['tokens'] = self.validated_data['tokens']
+        
+        return data
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(write_only=True, required=True)
+
+    def validate(self, data):
+        user = User.objects.filter(email=data['email']).first()
+        if user and user.check_password(data['password']):
+            # Generate tokens
+            refresh = RefreshToken.for_user(user)
+            data['tokens'] = {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }
+            data['user'] = user
+            return data
+        raise serializers.ValidationError("Invalid credentials")
