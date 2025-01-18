@@ -243,6 +243,15 @@ class LoginView(APIView):
             if user:
                 login(request, user)
                 refresh = RefreshToken.for_user(user)
+
+                print('Login Response:', {  
+                    'user': user.email,
+                    'tokens': {
+                        'access': str(refresh.access_token),
+                        'refresh': str(refresh)
+                    }
+                })
+
                 return Response({
                     'message': 'Login successful',
                     'user': {
