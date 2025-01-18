@@ -6,7 +6,7 @@ def send_welcome_email(user_email, first_name):
     message = f"""
     Hi {first_name},
     
-    Welcome to our Course Recommendation System! 
+    Welcome to our Course Recommendation System!🎉 
     We're excited to have you join us.
     
     Start exploring courses that match your interests.
@@ -14,7 +14,7 @@ def send_welcome_email(user_email, first_name):
     Best regards,
     CourseMate Team
     """
-    
+    print(f"Attempting to send email to {user_email}") 
     try:
         send_mail(
             subject=subject,
@@ -22,6 +22,9 @@ def send_welcome_email(user_email, first_name):
             from_email=settings.EMAIL_HOST_USER,
             recipient_list=[user_email],
             fail_silently=False,
-        )
+        ) 
+        print("Email sent successfully!")  # Debug print
+        return True
     except Exception as e:
         print(f"Failed to send email: {str(e)}")
+        return False
