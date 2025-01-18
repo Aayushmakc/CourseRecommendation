@@ -190,11 +190,13 @@ from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import SignupSerializer, LoginSerializer
 from .utils import send_welcome_email
+from rest_framework.permissions import AllowAny
 
 class SignupView(APIView):
     """
     API endpoint for user registration.
     """
+    permission_classes = [AllowAny]
     parser_classes = (JSONParser, FormParser, MultiPartParser)
     serializer_class = SignupSerializer  
 
